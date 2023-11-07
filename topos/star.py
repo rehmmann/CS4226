@@ -11,7 +11,7 @@ class TreeTopo( Topo ):
     "Tree topology"
 
     def build( self ):
-        # Read star.in
+        # Read ring.in
         # Load configuration of Hosts, Switches, and Links
         # You can write other functions as you need.
 
@@ -24,6 +24,25 @@ class TreeTopo( Topo ):
 
         # Add links
         # > self.addLink([HOST1], [HOST2])
+        with open('star.in', 'r') as f:
+            lines = f.readlines()
+        
+        num_hosts,num_switches,num_links = map(int,lines[0].split())
+
+        #Add hosts
+        for i in range(1,num_hosts+1):
+            self.addHost('h%d' % i)
+
+
+        #Add switches
+        for i in range(1,num_switches+1):
+            sconfig = {'dpid': "%016x" % i}
+            self.addSwitch('s%d' % i, **sconfig)
+        
+        #Add links
+        for line in lines[1:]:
+            h1,h2 = line.rstrip('\n').split(',')
+            self.addLink(h1,h2)
         
                     
 topos = { 'sdnip' : ( lambda: TreeTopo() ) }
