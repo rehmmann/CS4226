@@ -27,6 +27,9 @@ import org.onosproject.net.DeviceId;
 import org.onosproject.net.PortNumber;
 import org.onosproject.net.device.DeviceService;
 import org.onosproject.net.flow.*;
+import org.onosproject.net.flowobjective.DefaultForwardingObjective;
+import org.onosproject.net.flowobjective.FlowObjectiveService;
+import org.onosproject.net.flowobjective.ForwardingObjective;
 import org.onosproject.net.packet.PacketContext;
 import org.onosproject.net.packet.PacketPriority;
 import org.onosproject.net.packet.PacketProcessor;
@@ -63,6 +66,10 @@ public class LayerTwoManager implements LayerTwoService {
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
     protected FlowRuleService flowRuleService;
+
+    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    protected FlowObjectiveService flowObjectiveService;
+
 
     private LayerTwoPacketProcessor processor = new LayerTwoPacketProcessor();
     private ApplicationId appId;
@@ -183,13 +190,21 @@ public class LayerTwoManager implements LayerTwoService {
              * [STEP 1] Extract Packet src/dstMac
              * HINT: use APIs in pc.inPacket().
              */
+            // Step 1: Extract Packet src/dstMac
+            Ethernet ethPkt = pc.inPacket().parsed();
 
+            MacAddress srcMac = ethPkt.getSourceMAC();
+            MacAddress dstMac = ethPkt.getDestinationMAC();
             /**
              * [STEP 2] Insert new entry to the mactable
              * HINT: get current macTable from macTables with the device id cp.deviceId().
              * HINT: create new MacTableEntry with in port [cp.port()] and a default duration 60 [Duration.ofSeconds(60)].
              * HINT: add the pair srcMac and macTableEntry to macTable.
              */
+            
+            MacTableEntry macTableEntry = new MacTableEntry(cp.port(), Duration.ofSeconds(60));
+            macTables.computeIfAbsent(cp.deviceId(), k -> new ConcurrentHashMap<>())
+                    .put(srcMac, macTableEntry);
 
             PortNumber outPort = null;
 
@@ -202,6 +217,13 @@ public class LayerTwoManager implements LayerTwoService {
              *      Insert the FlowRule to the designated output port.
              * Otherwise, we haven't learnt the output port yet. We need to flood this packet to all the ports.
              */
+            Map<MacAddress, MacTableEntry> macTable = macTables.get(cp.deviceId());
+            if (macTable != null) {
+                MacTableEntry destinationEntry = macTable.get(dstMac);
+                if (destinationEntry != null) {
+                    outPort = destinationEntry.getPortNumber();
+                }
+            }
 
             /**
              **
@@ -213,6 +235,32 @@ public class LayerTwoManager implements LayerTwoService {
              *              .forDevice(cp.deviceId()).withPriority(PacketPriority.REACTIVE.priorityValue())
              *              .fromApp(appId).build();
              */
+             
+
+             if (outPort != null) {
+
+                TrafficSelector selector = DefaultTrafficSelector.builder()
+                        .matchEthDst(dstMac)
+                        .build();
+
+                TrafficTreatment treatment = DefaultTrafficTreatment.builder()
+                        .setOutput(outPort)
+                        .build();
+
+                ForwardingObjective forwardingObjective = DefaultForwardingObjective.builder()
+                        .withSelector(selector)
+                        .withTreatment(treatment)
+                        .withPriority(PacketPriority.REACTIVE.priorityValue())
+                        .fromApp(appId)
+                        .add();
+
+        
+
+                flowObjectiveService.forward(cp.deviceId(), forwardingObjective);
+            } else {
+                flood(pc);
+            }
+             
         }
 
         /**
