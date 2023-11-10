@@ -226,11 +226,10 @@ public class LayerTwoManager implements LayerTwoService {
              * duration 60 [Duration.ofSeconds(60)].
              * HINT: add the pair srcMac and macTableEntry to macTable.
              */
-
+            Map<MacAddress, MacTableEntry> macTable = macTables.get(cp.deviceId());
             MacTableEntry macTableEntry = new MacTableEntry(cp.port(), Duration.ofSeconds(60));
             macTables.computeIfAbsent(cp.deviceId(), k -> new ConcurrentHashMap<>())
                     .put(srcMac, macTableEntry);
-
             PortNumber outPort = null;
 
             /**
@@ -244,7 +243,7 @@ public class LayerTwoManager implements LayerTwoService {
              * Otherwise, we haven't learnt the output port yet. We need to flood this
              * packet to all the ports.
              */
-            Map<MacAddress, MacTableEntry> macTable = macTables.get(cp.deviceId());
+            // Map<MacAddress, MacTableEntry> macTable = macTables.get(cp.deviceId());
             if (macTable != null) {
                 MacTableEntry destinationEntry = macTable.get(dstMac);
                 if (destinationEntry != null) {
@@ -265,6 +264,16 @@ public class LayerTwoManager implements LayerTwoService {
              */
 
             if (outPort != null) {
+                // pc.treatmentBuilder().setOutput(outPort);
+                // FlowRule fr = DefaultFlowRule.builder()
+                // .withSelector(DefaultTrafficSelector.builder().matchEthDst(dstMac).build())
+                // .withTreatment(DefaultTrafficTreatment.builder().setOutput(outPort).build())
+                // .forDevice(cp.deviceId()).withPriority(PacketPriority.REACTIVE.priorityValue())
+                // .makeTemporary(60)
+                // .fromApp(appId).build();
+
+                // flowRuleService.applyFlowRules(fr);
+                // pc.send();
 
                 TrafficSelector selector = DefaultTrafficSelector.builder()
                         .matchEthDst(dstMac)

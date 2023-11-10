@@ -54,7 +54,8 @@ import java.util.EnumSet;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
- * WORK-IN-PROGRESS: Sample reactive forwarding application using intent framework.
+ * WORK-IN-PROGRESS: Sample reactive forwarding application using intent
+ * framework.
  */
 @Component(immediate = true)
 public class IntentReactiveForwarding {
@@ -88,8 +89,8 @@ public class IntentReactiveForwarding {
     private static final int DROP_RULE_TIMEOUT = 300;
 
     private static final EnumSet<IntentState> WITHDRAWN_STATES = EnumSet.of(IntentState.WITHDRAWN,
-                                                                            IntentState.WITHDRAWING,
-                                                                            IntentState.WITHDRAW_REQ);
+            IntentState.WITHDRAWING,
+            IntentState.WITHDRAW_REQ);
 
     @Activate
     public void activate() {
@@ -115,7 +116,6 @@ public class IntentReactiveForwarding {
         log.info("Stopped");
     }
 
-    
     /**
      * Packet processor responsible for forwarding packets along their paths.
      */
@@ -123,7 +123,8 @@ public class IntentReactiveForwarding {
         /**
          * Reactive packet forwaring.
          * 
-         * If the destination of incoming packet is known by the device, simply forward this packet via the output port.
+         * If the destination of incoming packet is known by the device, simply forward
+         * this packet via the output port.
          * Otherwise, flood this packet to neighbors.
          *
          * @param pc PacketContext object containing packet info
@@ -137,28 +138,48 @@ public class IntentReactiveForwarding {
 
             /* Fetch incoming packet */
 
-            /** 
+            /**
              * [STEP 1] Extract Ethernet header
              * more specifically, we need the source and destination IP address
              */
+            InboundPacket pkt = context.inPacket();
+            Ethernet ethPkt = pkt.parsed();
 
-            /** 
-             * [STEP 2] Do we know where the destination host is and which host should we hand this packet to?
+            if (ethPkt == null) {
+                return;
+            }
+
+            HostId srcId = HostId.hostId(ethPkt.getSourceMAC());
+            HostId dstId = HostId.hostId(ethPkt.getDestinationMAC());
+            /**
+             * [STEP 2] Do we know where the destination host is and which host should we
+             * hand this packet to?
              * If not, flood this packet and bail.
              * Otherwise, just forward it to the next hop and processing is done.
              * * HINT: use setUpConnectivity() to install flow rule
              */
+            Host dst = hostService.getHost(dstId);
+            if (dst == null) {
+                flood(context);
+                return;
+            } else {
+                setUpConnectivity(context, srcId, dstId);
+                forwardPacketToDst(context, dst);
+                return;
+            }
         }
     }
 
     /**
      * Send out the packet via the specified port.
      * 
-     * @param pc PacketContext object containing packet info
-     * @param portNumber the specified port through which this packet will be send out
+     * @param pc         PacketContext object containing packet info
+     * @param portNumber the specified port through which this packet will be send
+     *                   out
      */
     private void packetOut(PacketContext context, PortNumber portNumber) {
-
+        context.treatmentBuilder().setOutput(portNumber);
+        context.send();
     }
 
     /**
@@ -168,7 +189,7 @@ public class IntentReactiveForwarding {
      */
     private void flood(PacketContext context) {
         if (topologyService.isBroadcastPoint(topologyService.currentTopology(),
-                                             context.inPacket().receivedFrom())) {
+                context.inPacket().receivedFrom())) {
             packetOut(context, PortNumber.FLOOD);
         } else {
             context.block();
@@ -178,11 +199,16 @@ public class IntentReactiveForwarding {
     /**
      * Forward the incoming packet to specified destination.
      * 
-     * @param pc PacketContext object containing packet info
+     * @param pc  PacketContext object containing packet info
      * @param dst the next hop of this packet
      */
     private void forwardPacketToDst(PacketContext context, Host dst) {
         /* Build and send out packet to destination host */
+        TrafficTreatment treatment = DefaultTrafficTreatment.builder().setOutput(dst.location().port()).build();
+        OutboundPacket packet = new DefaultOutboundPacket(dst.location().deviceId(),
+                treatment, context.inPacket().unparsed());
+        packetService.emit(packet);
+        log.info("sending packet: {}", packet);
     }
 
     /* Install a rule forwarding the packet to the specified port. */
@@ -221,8 +247,8 @@ public class IntentReactiveForwarding {
                 flowObjectiveService.forward(context.outPacket().sendThrough(), objective);
             }
         } else if (intent == null) {
-            /** 
-             * This intent has never been inserted before, 
+            /**
+             * This intent has never been inserted before,
              * we should submit it to Intent Service.
              */
 
