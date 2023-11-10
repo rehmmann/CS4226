@@ -264,33 +264,34 @@ public class LayerTwoManager implements LayerTwoService {
              */
 
             if (outPort != null) {
-                // pc.treatmentBuilder().setOutput(outPort);
-                // FlowRule fr = DefaultFlowRule.builder()
-                // .withSelector(DefaultTrafficSelector.builder().matchEthDst(dstMac).build())
-                // .withTreatment(DefaultTrafficTreatment.builder().setOutput(outPort).build())
-                // .forDevice(cp.deviceId()).withPriority(PacketPriority.REACTIVE.priorityValue())
-                // .makeTemporary(60)
-                // .fromApp(appId).build();
+                pc.treatmentBuilder().setOutput(outPort);
+                FlowRule fr = DefaultFlowRule.builder()
+                        .withSelector(DefaultTrafficSelector.builder().matchEthDst(dstMac).build())
+                        .withTreatment(DefaultTrafficTreatment.builder().setOutput(outPort).build())
+                        .forDevice(cp.deviceId()).withPriority(PacketPriority.REACTIVE.priorityValue())
+                        .makeTemporary(60)
+                        .fromApp(appId).build();
 
-                // flowRuleService.applyFlowRules(fr);
-                // pc.send();
+                flowRuleService.applyFlowRules(fr);
+                pc.send();
 
-                TrafficSelector selector = DefaultTrafficSelector.builder()
-                        .matchEthDst(dstMac)
-                        .build();
+                // TrafficSelector selector = DefaultTrafficSelector.builder()
+                // .matchEthDst(dstMac)
+                // .build();
 
-                TrafficTreatment treatment = DefaultTrafficTreatment.builder()
-                        .setOutput(outPort)
-                        .build();
+                // TrafficTreatment treatment = DefaultTrafficTreatment.builder()
+                // .setOutput(outPort)
+                // .build();
 
-                ForwardingObjective forwardingObjective = DefaultForwardingObjective.builder()
-                        .withSelector(selector)
-                        .withTreatment(treatment)
-                        .withPriority(PacketPriority.REACTIVE.priorityValue())
-                        .fromApp(appId)
-                        .add();
+                // ForwardingObjective forwardingObjective =
+                // DefaultForwardingObjective.builder()
+                // .withSelector(selector)
+                // .withTreatment(treatment)
+                // .withPriority(PacketPriority.REACTIVE.priorityValue())
+                // .fromApp(appId)
+                // .add();
 
-                flowObjectiveService.forward(cp.deviceId(), forwardingObjective);
+                // flowObjectiveService.forward(cp.deviceId(), forwardingObjective);
             } else {
                 flood(pc);
             }
