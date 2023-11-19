@@ -307,7 +307,7 @@ def check(id):
         exit(255)
     else:
         warn(f"({id}) PASSED: Topology check\n")
-    exit(0)
+    
     # Task 2
     warn("############################ Starting test cases for Task 2 ############################\n")
 
@@ -334,6 +334,7 @@ def check(id):
         warn(f"({id}) FAILED: Neighbour check\n")
     else:
         warn(f"({id}) PASSED: Neighbour check\n")
+    exit(0)
 
     # Task 3
     warn("############################ Starting test cases for Task 3 ############################\n")
