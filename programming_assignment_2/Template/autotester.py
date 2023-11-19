@@ -349,7 +349,6 @@ def check(id):
         warn(f"({id}) FAILED: Metric value check\n")
     else:
         warn(f"({id}) PASSED: Metric value check\n")
-    exit(0)
 
     # Task 4
     warn("############################ Starting test cases for Task 4 ############################\n")
