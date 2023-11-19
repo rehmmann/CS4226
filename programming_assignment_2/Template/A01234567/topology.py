@@ -52,16 +52,16 @@ class Topology(Topo):
         self.addLink(h412, s410)
        
         # Set IP addresses  
-        r110.setIP('r110-eth0', '192.168.1.0/31')
-        r120.setIP('r120-eth0', '192.168.1.1/31')
+        # r110.setIP('r110-eth0', '192.168.1.0/31')
+        # r120.setIP('r120-eth0', '192.168.1.1/31')
         
-        h211.setIP('h211-eth0', '10.2.1.1/24')
-        r210.setIP('r210-eth0', '10.2.1.254/24')
+        # h211.setIP('h211-eth0', '10.2.1.1/24')
+        # r210.setIP('r210-eth0', '10.2.1.254/24')
         
         # ... Configure other IPs
         
-        r110.configDefault()
-        r120.configDefault()
+        # r110.configDefault()
+        # r120.configDefault()
         # ... Configure default routes
 
 
