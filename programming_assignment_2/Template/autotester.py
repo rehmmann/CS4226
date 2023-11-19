@@ -334,7 +334,7 @@ def check(id):
         warn(f"({id}) FAILED: Neighbour check\n")
     else:
         warn(f"({id}) PASSED: Neighbour check\n")
-    exit(0)
+
 
     # Task 3
     warn("############################ Starting test cases for Task 3 ############################\n")
@@ -349,6 +349,7 @@ def check(id):
         warn(f"({id}) FAILED: Metric value check\n")
     else:
         warn(f"({id}) PASSED: Metric value check\n")
+    exit(0)
 
     # Task 4
     warn("############################ Starting test cases for Task 4 ############################\n")
