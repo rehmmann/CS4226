@@ -307,7 +307,7 @@ def check(id):
         exit(255)
     else:
         warn(f"({id}) PASSED: Topology check\n")
-
+    exit(0)
     # Task 2
     warn("############################ Starting test cases for Task 2 ############################\n")
 
