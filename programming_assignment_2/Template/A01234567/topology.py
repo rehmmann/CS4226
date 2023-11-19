@@ -21,32 +21,32 @@ class Topology(Topo):
         self.addHost('r310', cls=FRRRouter, asn=300, loopback="100.100.3.1/32")
         self.addHost('r410', cls=FRRRouter, asn=400, loopback="100.100.4.1/32")
         
-        # Add switches 
-        # s120 = self.addSwitch('s120')
-        # s130 = self.addSwitch('s130')
-        # s210 = self.addSwitch('s210')
-        # s310 = self.addSwitch('s310')
-        # s410 = self.addSwitch('s410')
        
         # Add hosts
-        self.addHost('h211', ip="10.2.1.1/24")
-        self.addHost('h311', ip="10.3.1.1/24")
-        self.addHost('h411', ip="10.4.1.1/25")
-        self.addHost('h412', ip="10.4.1.129/25")
+        self.addHost('h211', ip="10.2.1.1/24", defaultRoute=f'via 10.2.1.254')
+        self.addHost('h311', ip="10.3.1.1/24", defaultRoute=f'via 10.3.1.254')
+        self.addHost('h411', ip="10.4.1.1/25", defaultRoute=f'via 10.4.1.126')
+        self.addHost('h412', ip="10.4.1.129/25", defaultRoute=f'via 10.4.1.254')
         
         # Link hosts to routers
-        self.addLink('r210', 'h211')
-        self.addLink('r410', 'h412')
-        self.addLink('r410', 'h411')
-        self.addLink('r310', 'h311')
+        self.addLink('r210', 'h211', intfName1="r210-eth0", params1={"ip":"10.2.1.254/24"})
+        self.addLink('r410', 'h412', intfName1="r410-eth1", params1={"ip":"10.4.1.254/25"})
+        self.addLink('r410', 'h411', intfName1="r410-eth0", params1={"ip":"10.4.1.126/25"})
+        self.addLink('r310', 'h311', intfName1="r310-eth0", params1={"ip":"10.3.1.254/24"})
 
         # Link Routers
-        self.addLink('r210', 'r110')
-        self.addLink('r110', 'r120')
-        self.addLink('r110', 'r410')
-        self.addLink('r120', 'r130')
-        self.addLink('r410', 'r130')
-        self.addLink('r130', 'r310')
+        self.addLink('r210', 'r110', intfName1="r210-eth1", params1={"ip": "172.17.1.1/31"},
+                     intfName2="r110-eth2", params2={"ip": "172.17.1.0/31"})
+        self.addLink('r110', 'r120', intfName1="r110-eth1", params1={"ip": "192.168.1.0/31"},
+                     intfName2="r120-eth1", params2={"ip": "192.168.1.1/31"})
+        self.addLink('r110', 'r410', intfName1="r110-eth3", params1={"ip": "172.17.3.0/31"},
+                     intfName2="r410-eth2", params2={"ip": "172.17.3.1/31"})
+        self.addLink('r120', 'r130', intfName1="r120-eth2", params1={"ip": "192.168.1.2/31"},
+                     intfName2="r130-eth1", params2={"ip": "192.168.1.3/31"})      
+        self.addLink('r410', 'r130', intfName1="r410-eth3", params1={"ip": "172.17.4.1/31"},
+                     intfName2="r130-eth3", params2={"ip": "172.17.4.0/31"})
+        self.addLink('r130', 'r310', intfName1="r130-eth2", params1={"ip": "172.17.2.0/31"},
+                     intfName2="r310-eth1", params2={"ip": "172.17.2.1/31"})
 
 
         # self.addLink(r110, s120)
