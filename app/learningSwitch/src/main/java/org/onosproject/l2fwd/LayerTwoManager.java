@@ -275,23 +275,6 @@ public class LayerTwoManager implements LayerTwoService {
                 flowRuleService.applyFlowRules(fr);
                 pc.send();
 
-                // TrafficSelector selector = DefaultTrafficSelector.builder()
-                // .matchEthDst(dstMac)
-                // .build();
-
-                // TrafficTreatment treatment = DefaultTrafficTreatment.builder()
-                // .setOutput(outPort)
-                // .build();
-
-                // ForwardingObjective forwardingObjective =
-                // DefaultForwardingObjective.builder()
-                // .withSelector(selector)
-                // .withTreatment(treatment)
-                // .withPriority(PacketPriority.REACTIVE.priorityValue())
-                // .fromApp(appId)
-                // .add();
-
-                // flowObjectiveService.forward(cp.deviceId(), forwardingObjective);
             } else {
                 flood(pc);
             }
